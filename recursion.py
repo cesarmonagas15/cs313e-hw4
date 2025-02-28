@@ -1,8 +1,7 @@
 """
 Student information for this assignment:
 
-Replace Cesar Monagas with your name.
-On my/our honor, Cesar Monagas,this
+On my/our honor, Cesar Monagas and Helen Moon,this
 programming assignment is my own work and I have not provided this code to
 any other student.
 
@@ -13,6 +12,7 @@ code to someone else), the case shall be submitted to the Office of the Dean of
 Students. Academic penalties up to and including an F in the course are likely.
 
 UT EID 1: cam9225
+UT EID 2: ym8729
 """
 
 
@@ -26,11 +26,9 @@ def group_sum(start, nums, target):
     """
     if start >= len(nums):
         return target == 0
-    if group_sum(start + 1, nums, target - nums[start]):
-        return True
-    if group_sum(start + 1, nums, target):
-        return True
-    return False
+    use_it = group_sum(start + 1, nums, target - nums[start])
+    skip_it = group_sum(start + 1, nums, target)
+    return use_it or skip_it
 
 
 def group_sum_6(start, nums, target):
@@ -46,11 +44,8 @@ def group_sum_6(start, nums, target):
         return target == 0
     if nums[start] == 6:
         return group_sum_6(start + 1, nums, target - 6)
-    if group_sum_6(start + 1, nums, target - nums[start]):
-        return True
-    if group_sum_6(start + 1, nums, target):
-        return True
-    return False
+    return (group_sum_6(start + 1, nums, target - nums[start]) or
+            group_sum_6(start + 1, nums, target))
 
 
 def group_no_adj(start, nums, target):
@@ -64,11 +59,9 @@ def group_no_adj(start, nums, target):
     """
     if start >= len(nums):
         return target == 0
-    if group_no_adj(start + 2, nums, target - nums[start]):
-        return True
-    if group_no_adj(start + 1, nums, target):
-        return True
-    return False
+    use_and_skip_next = group_no_adj(start + 2, nums, target - nums[start])
+    skip_this = group_no_adj(start + 1, nums, target)
+    return use_and_skip_next or skip_this
 
 
 def group_sum_5(start, nums, target):
@@ -82,14 +75,14 @@ def group_sum_5(start, nums, target):
     """
     if start >= len(nums):
         return target == 0
-    if nums[start] % 5 == 0:
+    curr = nums[start]
+    if curr % 5 == 0:
         if start + 1 < len(nums) and nums[start + 1] == 1:
-            return group_sum_5(start + 2, nums, target - nums[start])
-        return group_sum_5(start + 1, nums, target - nums[start])
-    if start > 0 and nums[start] == 1 and nums[start - 1] % 5 == 0:
+            return group_sum_5(start + 2, nums, target - curr)
+        return group_sum_5(start + 1, nums, target - curr)
+    if start > 0 and curr == 1 and nums[start - 1] % 5 == 0:
         return group_sum_5(start + 1, nums, target)
-    # will return true if either is true
-    return (group_sum_5(start + 1, nums, target - nums[start]) or
+    return (group_sum_5(start + 1, nums, target - curr) or
             group_sum_5(start + 1, nums, target))
 
 
@@ -106,18 +99,15 @@ def group_sum_clump(start, nums, target):
     """
     if start >= len(nums):
         return target == 0
-    count = 1
-    sum_same = nums[start]
-    i = start
-    while i + 1 < len(nums) and nums[i + 1] == nums[start]:
-        count += 1
-        sum_same += nums[start]
-        i += 1
-    if group_sum_clump(start + count, nums, target - sum_same):
-        return True
-    if group_sum_clump(start + count, nums, target):
-        return True
-    return False
+    same = 1
+    total = nums[start]
+    pos = start
+    while pos + 1 < len(nums) and nums[pos + 1] == nums[start]:
+        same += 1
+        total += nums[start]
+        pos += 1
+    return (group_sum_clump(start + same, nums, target - total) or
+            group_sum_clump(start + same, nums, target))
 
 
 def split_array(nums):
@@ -129,16 +119,16 @@ def split_array(nums):
     pre: len(nums) >= 0, nums will only contain ints
     post: return True if nums can be split, False otherwise
     """
-    def helper(i, sum1, sum2):
-        if i >= len(nums):
-            return sum1 == sum2
-        if helper(i + 1, sum1 + nums[i], sum2):
-            return True
-        if helper(i + 1, sum1, sum2 + nums[i]):
-            return True
-        return False
     if not nums:
         return True
+    def helper(pos, first, second):
+        if pos >= len(nums):
+            return first == second
+        if helper(pos + 1, first + nums[pos], second):
+            return True
+        if helper(pos + 1, first, second + nums[pos]):
+            return True
+        return False
     return helper(0, 0, 0)
 
 
@@ -151,15 +141,16 @@ def split_odd_10(nums):
     pre: len(nums) >= 0, nums will only contain ints
     post: return True if nums can be split, False otherwise
     """
-    def helper(i, odd_sum, ten_sum):
-        if i >= len(nums):
-            return odd_sum % 2 == 1 and ten_sum % 10 == 0
-        if helper(i + 1, odd_sum + nums[i], ten_sum):
-            return True
-        if helper(i + 1, odd_sum, ten_sum + nums[i]):
-            return True
-        return False
     if not nums:
+        return False
+    def helper(pos, odd, tens):
+        if pos >= len(nums):
+            return odd % 2 == 1 and tens % 10 == 0
+        curr = nums[pos]
+        if helper(pos + 1, odd + curr, tens):
+            return True
+        if helper(pos + 1, odd, tens + curr):
+            return True
         return False
     return helper(0, 0, 0)
 
@@ -175,20 +166,16 @@ def split_53(nums):
     pre: len(nums) >= 0, nums will only contain ints
     post: return True if nums can be split, False otherwise
     """
-    def helper(i, sum1, sum2):
-        if i >= len(nums):
-            return sum1 == sum2
-        num = nums[i]
-        # multiple of 5 must go in first group
-        if num % 5 == 0:
-            return helper(i + 1, sum1 + num, sum2)
-        # multiple of 3 (not 5) must go in second group
-        if num % 3 == 0:
-            return helper(i + 1, sum1, sum2 + num)
-        # other numbers can go in either group
-        return (helper(i + 1, sum1 + num, sum2) or
-                helper(i + 1, sum1, sum2 + num))
-    # empty list works
     if not nums:
         return True
+    def helper(pos, group5, group3):
+        if pos >= len(nums):
+            return group5 == group3
+        n = nums[pos]
+        if n % 5 == 0:
+            return helper(pos + 1, group5 + n, group3)
+        if n % 3 == 0:
+            return helper(pos + 1, group5, group3 + n)
+        return (helper(pos + 1, group5 + n, group3) or
+                helper(pos + 1, group5, group3 + n))
     return helper(0, 0, 0)
